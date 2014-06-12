@@ -2,6 +2,7 @@ package com.boxysystems.scriptmonkey.intellij.action;
 
 import com.boxysystems.scriptmonkey.intellij.ScriptMonkeyPlugin;
 import com.boxysystems.scriptmonkey.intellij.ui.*;
+import com.boxysystems.scriptmonkey.intellij.util.LoggingUtil;
 import com.boxysystems.scriptmonkey.intellij.util.ProjectUtil;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -16,16 +17,20 @@ import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiFile;
 import com.intellij.ui.content.Content;
 import com.intellij.util.PathUtil;
+import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.log4j.Logger;
 
 import javax.swing.*;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.Date;
 
 public class RunScriptAction extends ScriptShellPanelAction {
 
     private FileFilter fileFilter = new ExtensionBasedFileFilter("js", "groovy");
+    private static final Logger logger = Logger.getLogger(RunScriptAction.class);
 
     public void update(AnActionEvent actionEvent) {
         super.update(actionEvent);
@@ -93,7 +98,7 @@ public class RunScriptAction extends ScriptShellPanelAction {
                 String language = commandProcessor.guessLanguage(scriptFile);
                 commandProcessor.addGlobalVariable(language,"window", panel);
                 panel.clear();
-                panel.println("Running script '" + scriptFile.getAbsolutePath() + "' ...");
+                panel.println(LoggingUtil.withDate("Running script '" + scriptFile.getAbsolutePath() + "' ..."));
                 ScriptCommandProcessor.ScriptRunningTask task = commandProcessor.processScript(scriptContent,language, new RunScriptActionCallback(panel));
                 panel.getStopScriptAction().setTask(task);
 
@@ -136,6 +141,8 @@ public class RunScriptAction extends ScriptShellPanelAction {
                     StringWriter stackTrace = new StringWriter();
                     throwable.printStackTrace(new PrintWriter(stackTrace));
                     panel.println(stackTrace);
+                    logger.warn("Script evaluation failed:\n"+ExceptionUtils.getFullStackTrace(throwable));
+
                     finishUp();
                 }
             });

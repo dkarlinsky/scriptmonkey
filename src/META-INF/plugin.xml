@@ -39,6 +39,11 @@
       
     <![CDATA[
 
+      <u>Version 1.0.5 changes:</u>
+        <li>Disabled classloading of project libraries - which caused 15s delay for each script</li>
+        <li>Added time to console output lines</li>
+      </ul>
+
       <u>Version 1.0.4 changes:</u>
         <li>Disabled global scripts for now</li>
         <li>Added stack trace to exception output</li>
@@ -52,7 +57,7 @@
 
     ]]>
   </change-notes>
-  <version>1.0.4</version>
+  <version>1.0.5</version>
   <vendor email="siddique@boxysystems.com" url="http://www.BoxySystems.com">Siddique Hameed</vendor>
   <idea-version since-build="122.519"/>
 

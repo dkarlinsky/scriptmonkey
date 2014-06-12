@@ -5,10 +5,12 @@ import com.boxysystems.scriptmonkey.intellij.ScriptMonkeySettings;
 import com.boxysystems.scriptmonkey.intellij.action.RerunScriptAction;
 import com.boxysystems.scriptmonkey.intellij.action.StopScriptAction;
 import com.boxysystems.scriptmonkey.intellij.action.CloseScriptConsoleAction;
+import com.boxysystems.scriptmonkey.intellij.util.LoggingUtil;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.ActionToolbar;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
+import com.intellij.ui.components.JBScrollPane;
 
 import javax.swing.*;
 import javax.swing.event.CaretEvent;
@@ -59,9 +61,10 @@ public class ScriptShellPanel extends JPanel {
             editor.setEditable(false);
         }
 
-        JScrollPane scroller = new JScrollPane();
+        JScrollPane scroller = new JBScrollPane();
         scroller.getViewport().add(editor);
         add(scroller, BorderLayout.CENTER);
+
 
         editor.getDocument().addDocumentListener(new CommandShellDocumentListener(this));
 
@@ -135,13 +138,16 @@ public class ScriptShellPanel extends JPanel {
         println(""+s);
     }
 
-    public void println(String s) {
+    public void println(String s)
+    {
+        s = LoggingUtil.withDate(s);
         Document d = editor.getDocument();
         try {
             d.insertString(d.getLength(), s + "\n", null);
         } catch (BadLocationException e) {
             e.printStackTrace();
         }
+
     }
 
     //TODO: Need to implement this

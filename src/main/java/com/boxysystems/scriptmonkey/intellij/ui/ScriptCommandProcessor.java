@@ -88,11 +88,13 @@ public class ScriptCommandProcessor implements ShellCommandProcessor {
 
     private void evaluateScriptFile(File scriptFile, ScriptProcessorCallback callback) {
         try {
-            initScriptingEngineAndRunGlobalScripts();
             Object result = null;
             if (scriptFile != null) {
                 logger.info("Evaluating script file '" + scriptFile + "' ...");
-                result = getEngine(guessLanguage(scriptFile)).eval(new FileReader(scriptFile));
+                String language = guessLanguage(scriptFile);
+                ScriptEngine engine = getEngine(language);
+                initScriptEngine(engine);
+                result = engine.eval(new FileReader(scriptFile));
             }
             callback.success(result);
         } catch (Throwable e) {
@@ -169,10 +171,10 @@ public class ScriptCommandProcessor implements ShellCommandProcessor {
     private void createScriptEngines(ScriptMonkeyPlugin scriptMonkeyPlugin) {
         ScriptEngineManager manager;
         if (scriptMonkeyPlugin != null && pluginClassLoader != null) {
-            ScriptMonkeyPluginClassLoader augmentedClassLoader = pluginClassLoader.getAugmentedClassLoader();
-            if (augmentedClassLoader != null) {
-                Thread.currentThread().setContextClassLoader(augmentedClassLoader);
-            }
+//            ScriptMonkeyPluginClassLoader augmentedClassLoader = pluginClassLoader.getAugmentedClassLoader();
+//            if (augmentedClassLoader != null) {
+//                Thread.currentThread().setContextClassLoader(augmentedClassLoader);
+//            }
             manager = createScriptEngineManager();
         } else {
             manager = createScriptEngineManager();
