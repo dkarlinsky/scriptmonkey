@@ -8,7 +8,7 @@ package com.boxysystems.scriptmonkey.intellij.ui;
  * To change this template use File | Settings | File Templates.
  */
 interface ShellCommandProcessor {
-    public String executeCommand(String cmd);
-    public String getPrompt();
-    public boolean isCommandShell(); 
+    public String executeCommand(String cmd, String language);
+
+    public boolean isCommandShell();
 }

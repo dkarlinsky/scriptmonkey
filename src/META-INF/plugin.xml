@@ -38,14 +38,21 @@
   <change-notes>
       
     <![CDATA[
-      <ul>
-      <u>Version 1.0.2 changes:</u>
-        <li>Compatible with IntelliJ v12 Community Edition & WebStorm</li>
+
+      <u>Version 1.0.4 changes:</u>
+        <li>Disabled global scripts for now</li>
+        <li>Added stack trace to exception output</li>
       </ul>
+
       <ul>
+      <u>Version 1.0.3 changes:</u>
+        <li>Added support for Groovy</li>
+        <li>Compatible with IntelliJ v13 Community/Ultimate Edition</li>
+      </ul>
+
     ]]>
   </change-notes>
-  <version>1.0.2</version>
+  <version>1.0.4</version>
   <vendor email="siddique@boxysystems.com" url="http://www.BoxySystems.com">Siddique Hameed</vendor>
   <idea-version since-build="122.519"/>
 

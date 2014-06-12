@@ -4,12 +4,13 @@ import com.boxysystems.scriptmonkey.intellij.action.CopyScriptsOnStartupAction;
 import com.boxysystems.scriptmonkey.intellij.icons.Icons;
 import com.boxysystems.scriptmonkey.intellij.ui.PluginScript;
 import com.boxysystems.scriptmonkey.intellij.ui.ScriptMonkeyConfigurationForm;
+import com.boxysystems.scriptmonkey.intellij.ui.ScriptShellPanel;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ApplicationComponent;
 import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.ConfigurationException;
-import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectManager;
 import org.apache.log4j.Logger;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NonNls;
@@ -103,10 +104,15 @@ public class ScriptMonkeyApplicationComponent implements ApplicationComponent, C
     if (form != null && settings != null) {
       form.getData(settings);
       Project[] projects = ProjectManager.getInstance().getOpenProjects();
-      for (Project project : projects) {
-        ScriptMonkeyPlugin.getInstance(project).getCommandShellPanel().applySettings(settings);
+      for (Project project : projects)
+      {
+          ScriptMonkeyPlugin plugin = ScriptMonkeyPlugin.getInstance(project);
+          for (ScriptShellPanel scriptShellPanel : plugin.getCommandShellPanels())
+          {
+              scriptShellPanel.applySettings(settings);
+          }
       }
-//      SerializationUtil.toXml(settingsFile.getAbsolutePath(), settings);
+      //SerializationUtil.toXml(settingsFile.getAbsolutePath(), settings);
     }
   }
 

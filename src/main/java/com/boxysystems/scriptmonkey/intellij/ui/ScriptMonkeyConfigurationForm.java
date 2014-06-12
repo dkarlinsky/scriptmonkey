@@ -14,6 +14,7 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.filechooser.FileFilter;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.TableCellEditor;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -56,7 +57,7 @@ public class ScriptMonkeyConfigurationForm {
     btnBrowseHomeDir.addActionListener(new ActionListener() {
 
       public void actionPerformed(ActionEvent e) {
-        final VirtualFile[] files = FileChooser.chooseFiles(getRootComponent(), fileChooserDescriptor);
+        final VirtualFile[] files = FileChooser.chooseFiles(fileChooserDescriptor, getRootComponent(), null, null);
         if (files.length == 1) {
           String filePath = files[0].getPresentableUrl();
           txtHomeFolder.setText(filePath);
@@ -181,16 +182,7 @@ public class ScriptMonkeyConfigurationForm {
 
   private void addPluginScript() {
     JFileChooser pluginScriptChooser = new JFileChooser(Constants.DEFAULT_HOME_FOLDER);
-    pluginScriptChooser.setFileFilter(new FileFilter() {
-
-      public boolean accept(File f) {
-        return f.isDirectory() || f.getName().endsWith(".js");
-      }
-
-      public String getDescription() {
-        return "*.js (Javascript files)";
-      }
-    });
+    pluginScriptChooser.setFileFilter(new FileNameExtensionFilter("scripts","js","groovy"));
 
     if (JFileChooser.APPROVE_OPTION == pluginScriptChooser.showDialog(getRootComponent(), "Select Script")) {
       PluginScript pluginScript = new PluginScript(true, pluginScriptChooser.getSelectedFile().getAbsolutePath(), PluginScript.RUN_MODE.PROJECT_OPEN);

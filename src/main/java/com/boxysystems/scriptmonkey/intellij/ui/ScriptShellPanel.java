@@ -22,164 +22,174 @@ import java.util.concurrent.Executors;
 
 public class ScriptShellPanel extends JPanel {
 
-  private ShellCommandProcessor shellCommandProcessor;
+    private ShellCommandProcessor shellCommandProcessor;
     private AnAction[] actions;
     private JEditorPane editor;
 
-  private final ExecutorService commandExecutor =
-    Executors.newSingleThreadExecutor();
+    private final ExecutorService commandExecutor =
+            Executors.newSingleThreadExecutor();
 
-  private boolean updating;
+    private boolean updating;
+    private String language;
 
-  public ScriptShellPanel(ShellCommandProcessor cmdProc, AnAction actions[]) {
-    this.shellCommandProcessor = cmdProc;
-      this.actions = actions;
-      setLayout(new BorderLayout());
+    public ScriptShellPanel(ShellCommandProcessor cmdProc, String language, AnAction actions[]) {
 
-    final DefaultActionGroup toolbarGroup = new DefaultActionGroup();
+        this.shellCommandProcessor = cmdProc;
+        this.actions = actions;
+        this.language = language;
+        setLayout(new BorderLayout());
 
-    for (int i = 0; i < actions.length; i++) {
-      AnAction action = actions[i];
-      toolbarGroup.add(action);
-    }
+        final DefaultActionGroup toolbarGroup = new DefaultActionGroup();
 
-    final ActionManager actionManager = ActionManager.getInstance();
-    final ActionToolbar toolbar = actionManager.createActionToolbar(Constants.PLUGIN_ID, toolbarGroup, false);
-
-    add(toolbar.getComponent(), BorderLayout.WEST);
-
-    this.editor = new JEditorPane();
-
-    editor.setDocument(new CommandShellDocument());
-
-    if (!cmdProc.isCommandShell()) {
-      editor.setEditable(false);
-    }
-
-    JScrollPane scroller = new JScrollPane();
-    scroller.getViewport().add(editor);
-    add(scroller, BorderLayout.CENTER);
-
-    editor.getDocument().addDocumentListener(new CommandShellDocumentListener(this));
-
-    editor.addCaretListener(new CaretListener() {
-      public void caretUpdate(CaretEvent e) {
-        int len = editor.getDocument().getLength();
-        if (e.getDot() > len) {
-          editor.setCaretPosition(len);
+        for (int i = 0; i < actions.length; i++) {
+            AnAction action = actions[i];
+            toolbarGroup.add(action);
         }
-      }
-    });
 
-    if (shellCommandProcessor.isCommandShell()) {
-      clear();
-    }
-  }
+        final ActionManager actionManager = ActionManager.getInstance();
+        final ActionToolbar toolbar = actionManager.createActionToolbar(Constants.PLUGIN_ID, toolbarGroup, false);
 
-  public void requestFocus() {
-    editor.requestFocus();
-  }
+        add(toolbar.getComponent(), BorderLayout.WEST);
 
-  public void clear() {
-    clear(true);
-  }
+        this.editor = new JEditorPane();
 
-  public void clear(boolean prompt) {
-    CommandShellDocument d = (CommandShellDocument) editor.getDocument();
-    d.clear();
-    if (prompt) {
-      printPrompt();
-    }
-    setMark();
-    editor.requestFocus();
-  }
+        editor.setDocument(new CommandShellDocument());
 
-  public void setMark() {
-    ((CommandShellDocument) editor.getDocument()).setMark();
-  }
+        if (!cmdProc.isCommandShell()) {
+            editor.setEditable(false);
+        }
 
-  public String getMarkedText() {
-    try {
-      String s = ((CommandShellDocument) editor.getDocument()).getMarkedText();
-      int i = s.length();
-      while ((i > 0) && (s.charAt(i - 1) == '\n')) {
-        i--;
-      }
-      return s.substring(0, i);
-    } catch (BadLocationException e) {
-      e.printStackTrace();
-      return null;
-    }
-  }
+        JScrollPane scroller = new JScrollPane();
+        scroller.getViewport().add(editor);
+        add(scroller, BorderLayout.CENTER);
 
-  public void print(String s) {
-    Document d = editor.getDocument();
-    try {
-      d.insertString(d.getLength(), s, null);
-    } catch (BadLocationException e) {
-      e.printStackTrace();
-    }
-  }
+        editor.getDocument().addDocumentListener(new CommandShellDocumentListener(this));
 
-  public void println(final String s) {
-    SwingUtilities.invokeLater(new Runnable(){
-        public void run() {
-            Document d = editor.getDocument();
-            try {
-                d.insertString(d.getLength(), s + "\n", null);
-            } catch (BadLocationException e) {
-                e.printStackTrace();
+        editor.addCaretListener(new CaretListener() {
+            public void caretUpdate(CaretEvent e) {
+                int len = editor.getDocument().getLength();
+                if (e.getDot() > len) {
+                    editor.setCaretPosition(len);
+                }
             }
+        });
+
+        if (shellCommandProcessor.isCommandShell()) {
+            clear();
         }
-    });
-  }
-
-  //TODO: Need to implement this
-  public void stopScript() {
-    commandExecutor.shutdownNow();
-    println("Script cancelled!");
-  }
-
-  public void beginUpdate() {
-    editor.setEditable(false);
-    updating = true;
-  }
-
-  public void endUpdate() {
-    editor.setEditable(true);
-    updating = false;
-  }
-
-  public void printPrompt() {
-    if (shellCommandProcessor.isCommandShell()) {
-      print(getPrompt());
     }
-  }
 
-  private String getPrompt() {
-    return shellCommandProcessor.getPrompt();
-  }
+    public void requestFocus() {
+        editor.requestFocus();
+    }
 
-  public boolean isUpdating() {
-    return updating;
-  }
+    public void clear() {
+        clear(true);
+    }
 
-  public String executeCommand(String cmd) {
-    return shellCommandProcessor.executeCommand(cmd);
-  }
+    public void clear(boolean prompt) {
+        CommandShellDocument d = (CommandShellDocument) editor.getDocument();
+        d.clear();
+        if (prompt) {
+            printPrompt();
+        }
+        setMark();
+        editor.requestFocus();
+    }
 
-  public ExecutorService getCommandExecutor() {
-    return commandExecutor;
-  }
+    public void setMark() {
+        ((CommandShellDocument) editor.getDocument()).setMark();
+    }
 
-  public JEditorPane getEditor() {
-    return editor;
-  }
+    public String getMarkedText() {
+        try {
+            String s = ((CommandShellDocument) editor.getDocument()).getMarkedText();
+            int i = s.length();
+            while ((i > 0) && (s.charAt(i - 1) == '\n')) {
+                i--;
+            }
+            return s.substring(0, i);
+        } catch (BadLocationException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 
-  public void applySettings(ScriptMonkeySettings settings) {
-    editor.setBackground(settings.getCommandShellBackgroundColor());
-    editor.setForeground(settings.getCommandShellForegroundColor());
-  }
+    public void print(Object s)
+    {
+        print(""+s);
+    }
+
+    public void print(String s)
+    {
+        Document d = editor.getDocument();
+        try {
+            d.insertString(d.getLength(), s, null);
+        } catch (BadLocationException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void println(Object s)
+    {
+        println(""+s);
+    }
+
+    public void println(String s) {
+        Document d = editor.getDocument();
+        try {
+            d.insertString(d.getLength(), s + "\n", null);
+        } catch (BadLocationException e) {
+            e.printStackTrace();
+        }
+    }
+
+    //TODO: Need to implement this
+    public void stopScript() {
+        commandExecutor.shutdownNow();
+        println("Script cancelled!");
+    }
+
+    public void beginUpdate() {
+        editor.setEditable(false);
+        updating = true;
+    }
+
+    public void endUpdate() {
+        editor.setEditable(true);
+        updating = false;
+    }
+
+    public void printPrompt() {
+        if (shellCommandProcessor.isCommandShell()) {
+            print(getPrompt());
+        }
+    }
+
+    private String getPrompt() {
+        return language +"> ";
+    }
+
+    public boolean isUpdating() {
+        return updating;
+    }
+
+    public String executeCommand(String cmd) {
+        return shellCommandProcessor.executeCommand(cmd, language);
+    }
+
+    public ExecutorService getCommandExecutor() {
+        return commandExecutor;
+    }
+
+    public JEditorPane getEditor() {
+        return editor;
+    }
+
+    public void applySettings(ScriptMonkeySettings settings) {
+        editor.setBackground(settings.getCommandShellBackgroundColor());
+        editor.setForeground(settings.getCommandShellForegroundColor());
+    }
 
     public void toggleActions(){
         for (int i = 0; i < actions.length; i++) {
@@ -209,7 +219,7 @@ public class ScriptShellPanel extends JPanel {
                 return (StopScriptAction) action;
             }
         }
-        return null;            
+        return null;
     }
 
 }

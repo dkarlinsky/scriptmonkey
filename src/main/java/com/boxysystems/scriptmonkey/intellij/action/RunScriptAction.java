@@ -19,10 +19,13 @@ import com.intellij.util.PathUtil;
 
 import javax.swing.*;
 import java.io.File;
+import java.io.FileFilter;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 
 public class RunScriptAction extends ScriptShellPanelAction {
 
-    private JSFileFilter jsFileFilter = new JSFileFilter();
+    private FileFilter fileFilter = new ExtensionBasedFileFilter("js", "groovy");
 
     public void update(AnActionEvent actionEvent) {
         super.update(actionEvent);
@@ -35,7 +38,7 @@ public class RunScriptAction extends ScriptShellPanelAction {
         Editor editor = FileEditorManager.getInstance(project).getSelectedTextEditor();
         if (editor != null) {
             File scriptFile = getScriptFile(editor);
-            return jsFileFilter.accept(scriptFile);
+            return fileFilter.accept(scriptFile);
         }
         return false;
     }
@@ -80,17 +83,18 @@ public class RunScriptAction extends ScriptShellPanelAction {
 
                     AnAction scriptConsoleActions[] = {rerunAction, stopScriptAction, closeAction, openHelpAction};
 
-                    panel = new ScriptShellPanel(commandProcessor, scriptConsoleActions);
+                    panel = new ScriptShellPanel(commandProcessor, commandProcessor.guessLanguage(new File(contentName)), scriptConsoleActions);
                     content = toolWindow.addContentPanel(contentName, panel);
                 } else {
                     ScriptShellTabContent tabContent = (ScriptShellTabContent) content.getComponent();
                     panel = tabContent.getScriptShellPanel();
                     panel.toggleActions();
                 }
-                commandProcessor.addGlobalVariable("window", panel);
+                String language = commandProcessor.guessLanguage(scriptFile);
+                commandProcessor.addGlobalVariable(language,"window", panel);
                 panel.clear();
                 panel.println("Running script '" + scriptFile.getAbsolutePath() + "' ...");
-                ScriptCommandProcessor.ScriptRunningTask task = commandProcessor.processScript(scriptContent, new RunScriptActionCallback(panel));
+                ScriptCommandProcessor.ScriptRunningTask task = commandProcessor.processScript(scriptContent,language, new RunScriptActionCallback(panel));
                 panel.getStopScriptAction().setTask(task);
 
                 toolWindow.activate();
@@ -116,10 +120,10 @@ public class RunScriptAction extends ScriptShellPanelAction {
             this.panel = panel;
         }
 
-        public void success() {
+        public void success(final Object result) {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    panel.println("Successfully processed !");
+                    panel.println("Successfully processed! Result:\n"+result);
                     finishUp();
                 }
             });
@@ -129,7 +133,9 @@ public class RunScriptAction extends ScriptShellPanelAction {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     panel.println("Error running script ....");
-                    panel.println(throwable.toString());
+                    StringWriter stackTrace = new StringWriter();
+                    throwable.printStackTrace(new PrintWriter(stackTrace));
+                    panel.println(stackTrace);
                     finishUp();
                 }
             });

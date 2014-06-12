@@ -7,6 +7,6 @@ package com.boxysystems.scriptmonkey.intellij.ui;
  * Time: 4:30:42 PM
  */
 public interface ScriptProcessorCallback {
-  public void success();
+  public void success(Object result);
   public void failure(Throwable throwable);
 }
